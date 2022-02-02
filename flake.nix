@@ -22,26 +22,49 @@
         nativeBuildInputs = [ pkgs.gnumake pkgs.bear pkgs.clang ];
       };
 
-      # RStudio with tex wrapper for econometrics
-      apps."x86_64-linux".econ_rstudio = {
-        type = "app";
-        program =
-          let
-            # Wrap the rstudioWrapper with tex and pandoc included in runtime path
-            rstudioTexWrapper = pkgs.runCommand "rstudioTexWrapper"
-              {
-                buildInputs = [ pkgs.makeWrapper ];
-              }
-              (
-                ''
-                  mkdir -p $out/bin
-                  makeWrapper ${pkgs.rstudioWrapper.override {
-                    packages = with (pkgs.rPackages); [ markdown tidyverse ];
-                  }}/bin/rstudio $out/bin/rstudio --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.texlive.combined.scheme-full pkgs.pandoc]}
-                ''
-              );
-          in
-          "${rstudioTexWrapper}/bin/rstudio";
+      apps."x86_64-linux" = {
+        tex_studio = {
+          type = "app";
+          program =
+            let
+              # Wrap texStudio with tex ain runtime path
+              texStudioWrapper = pkgs.runCommand "texStudioWrapper"
+                {
+                  buildInputs = [ pkgs.makeWrapper ];
+                }
+                (
+                  ''
+                    mkdir -p $out/bin
+                    makeWrapper ${pkgs.texstudio}/bin/texstudio $out/bin/texstudio --prefix PATH : ${
+                      pkgs.lib.makeBinPath [ pkgs.texlive.combined.scheme-full
+                    ]}
+                  ''
+                );
+            in
+            "${texStudioWrapper}/bin/texstudio";
+        };
+
+        # RStudio with tex wrapper for econometrics
+        econ_rstudio = {
+          type = "app";
+          program =
+            let
+              # Wrap the rstudioWrapper with tex and pandoc included in runtime path
+              rstudioTexWrapper = pkgs.runCommand "rstudioTexWrapper"
+                {
+                  buildInputs = [ pkgs.makeWrapper ];
+                }
+                (
+                  ''
+                    mkdir -p $out/bin
+                    makeWrapper ${pkgs.rstudioWrapper.override {
+                      packages = with (pkgs.rPackages); [ markdown tidyverse ];
+                    }}/bin/rstudio $out/bin/rstudio --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.texlive.combined.scheme-full pkgs.pandoc]}
+                  ''
+                );
+            in
+            "${rstudioTexWrapper}/bin/rstudio";
+        };
       };
     };
 }
